@@ -55,11 +55,15 @@ EOD
   namespace :node do
     desc "Check required packages and install if packages are not installed"
     task :install_packages do
-      run "mkdir -p #{shared_path}/node_modules"
-      run "cp #{release_path}/package.json #{shared_path}"
-      run "cp #{release_path}/npm-shrinkwrap.json #{shared_path}"
-      run "cd #{shared_path} && npm install #{(node_env != 'production') ? '--dev' : ''} --loglevel warn"
-      run "ln -s #{shared_path}/node_modules #{release_path}/node_modules"
+      run "#{try_sudo} mkdir -p #{shared_path}/node_modules"
+      run "#{try_sudo} cp #{release_path}/package.json #{shared_path}"
+      run "#{try_sudo} cp #{release_path}/npm-shrinkwrap.json #{shared_path}"
+      if try_sudo == ''
+        run "cd #{shared_path} && npm install #{(node_env != 'production') ? '--dev' : ''} --loglevel warn"
+      else
+        run "cd #{shared_path} && #{try_sudo} -H npm install #{(node_env != 'production') ? '--dev' : ''} --loglevel warn"
+      end
+      run "#{try_sudo} ln -s #{shared_path}/node_modules #{release_path}/node_modules"
     end
 
     task :check_upstart_config do
@@ -68,29 +72,31 @@ EOD
 
     desc "Create upstart script for this node app"
     task :create_upstart_config do
-      temp_config_file_path = "#{shared_path}/#{application}.conf"
+      shared_config_file_path = "#{shared_path}/#{application}.conf"
+      temp_config_file_path = "/tmp/#{application}.conf"
 
       # Generate and upload the upstart script
       put upstart_file_contents, temp_config_file_path
+      run "#{try_sudo} cp #{temp_config_file_path} #{shared_config_file_path}"
 
       # Copy the script into place and make executable
-      sudo "cp #{temp_config_file_path} #{upstart_file_path}"
+      run "#{try_sudo :as => 'root'} cp #{shared_config_file_path} #{upstart_file_path}"
     end
 
     desc "Start the node application"
     task :start do
-      sudo "start #{upstart_job_name}"
+      "#{try_sudo} start #{upstart_job_name}"
     end
 
     desc "Stop the node application"
     task :stop do
-      sudo "stop #{upstart_job_name}"
+      "#{try_sudo} stop #{upstart_job_name}"
     end
 
     desc "Restart the node application"
     task :restart do
-      sudo "stop #{upstart_job_name}; true"
-      sudo "start #{upstart_job_name}"
+      "#{try_sudo} stop #{upstart_job_name}; true"
+      "#{try_sudo} start #{upstart_job_name}"
     end
   end
 
@@ -102,3 +108,5 @@ EOD
     end
   end
 end
+
+
