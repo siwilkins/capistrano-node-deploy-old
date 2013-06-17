@@ -103,7 +103,7 @@ EOD
   namespace :deploy do
     task :create_release_dir, :except => {:no_release => true} do
       mkdir_releases = "mkdir -p #{fetch :releases_path}"
-      mkdir_commands = ["log", "pids"].map {|dir| "mkdir -p #{shared_path}/#{dir}"}
+      mkdir_commands = ["log", "pids"].map {|dir| "#{try_sudo} mkdir -p #{shared_path}/#{dir}"}
       run mkdir_commands.unshift(mkdir_releases).join(" && ")
     end
   end
