@@ -46,7 +46,7 @@ respawn
 respawn limit 99 5
 
 script
-    cd #{current_path} && exec sudo -u #{node_user} NODE_ENV=#{node_env} #{app_environment} #{node_binary} #{current_path}/#{app_command}
+    cd #{current_path} && exec sudo -u #{node_user} NODE_ENV=#{node_env} #{app_environment} #{node_binary} #{current_path}/#{app_command} 2>> #{shared_path}/log/#{application}.error.log 1>> #{shared_path}/log/#{application}.out.log
 end script
 EOD
   }
