@@ -85,18 +85,18 @@ EOD
 
     desc "Start the node application"
     task :start do
-      "#{try_sudo} start #{upstart_job_name}"
+      sudo "start #{upstart_job_name}", as: 'root'
     end
 
     desc "Stop the node application"
     task :stop do
-      "#{try_sudo} stop #{upstart_job_name}"
+      sudo "stop #{upstart_job_name}", as: 'root'
     end
 
     desc "Restart the node application"
     task :restart do
-      "#{try_sudo} stop #{upstart_job_name}; true"
-      "#{try_sudo} start #{upstart_job_name}"
+      sudo "stop #{upstart_job_name}; true", as: 'root'
+      sudo "start #{upstart_job_name}", as: 'root'
     end
   end
 
