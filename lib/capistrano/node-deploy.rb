@@ -95,9 +95,12 @@ EOD
 
     desc "Restart the node application"
     task :restart do
-      sudo "stop #{upstart_job_name}; true", as: 'root'
-      sudo "start #{upstart_job_name}", as: 'root'
+      find_servers_for_task(current_task).each do |hostname|
+        sudo "stop #{upstart_job_name}; true", as: 'root', hosts: [hostname]
+        sudo "start #{upstart_job_name}", as: 'root', hosts: [hostname]
+      end
     end
+
   end
 
   namespace :deploy do
