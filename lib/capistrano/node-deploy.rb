@@ -46,8 +46,19 @@ respawn
 respawn limit 99 5
 
 script
+    echo $$ > /var/run/#{appliction}.pid
     cd #{current_path} && exec sudo -u #{node_user} NODE_ENV=#{node_env} #{app_environment} #{node_binary} #{current_path}/#{app_command} 2>> #{shared_path}/log/#{application}.error.log 1>> #{shared_path}/log/#{application}.out.log
 end script
+
+pre-start script
+    echo "[`date -u +%Y-%m-%dT%T.%3NZ`] (sys) Starting" >> /var/log/#{application}.sys.log
+end script
+
+pre-stop script
+    rm /var/run/#{application}.pid
+    echo "[`date -u +%Y-%m-%dT%T.%3NZ`] (sys) Stopping" >> /var/log/#{application}.pid
+end script
+
 EOD
   }
 
