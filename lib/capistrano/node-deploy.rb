@@ -2,6 +2,12 @@ require "digest/md5"
 require "railsless-deploy"
 require "multi_json"
 
+def put_sudo(data, to)
+    filename = File.basename(to)
+    to_directory = File.dirname(to)
+     put data, "/tmp/#{filename}"
+     run "#{sudo} mv /tmp/#{filename} #{to_directory}"
+end
 def remote_file_exists?(full_path)
   'true' ==  capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
 end
@@ -87,7 +93,7 @@ EOD
       temp_config_file_path = "/tmp/#{application}.conf"
 
       # Generate and upload the upstart script
-      put upstart_file_contents, temp_config_file_path
+      put_sudo upstart_file_contents, temp_config_file_path
       run "#{try_sudo} cp #{temp_config_file_path} #{shared_config_file_path}"
 
       # Copy the script into place and make executable
