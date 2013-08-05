@@ -51,6 +51,8 @@ stop on shutdown
 respawn
 respawn limit 99 5
 
+limit nofile 4096 4096
+
 script
     echo $$ > /var/run/#{application}.pid
     cd #{current_path} && exec sudo -u #{node_user} NODE_ENV=#{node_env} #{app_environment} #{node_binary} #{current_path}/#{app_command} 2>> #{shared_path}/log/#{application}.error.log 
@@ -112,9 +114,11 @@ EOD
 
     desc "Restart the node application"
     task :restart do
-      find_servers_for_task(current_task).each do |hostname|
+      servers = find_servers_for_task(current_task)
+      servers.each do |hostname|
         sudo "stop #{upstart_job_name}; true", as: 'root', hosts: [hostname]
         sudo "start #{upstart_job_name}", as: 'root', hosts: [hostname]
+        sleep(70) unless hostname == servers.last
       end
     end
 
