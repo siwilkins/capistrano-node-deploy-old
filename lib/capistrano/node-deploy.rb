@@ -45,7 +45,7 @@ stop on shutdown
 respawn
 respawn limit 99 5
 
-limit nofile 4096 4096
+limit nofile 8192 8192
 
 script
     echo $$ > /var/run/#{application}.pid
